@@ -1,0 +1,45 @@
+---
+- name: Install Node.js, npm, and Angular CLI & Deploy Angular App with NGINX
+  hosts: node-app  # Specify the group or host where you want to install Node.js and npm and deploy the app
+  become: true  # Run tasks with root privileges (sudo)
+
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+
+    - name: Install Node.js and npm
+      apt:
+        name:
+          - nodejs
+          - npm
+        state: present  # Ensure Node.js and npm are installed
+
+    - name: Install Angular CLI
+      npm:
+        name: "@angular/cli"
+        global: yes  # Install Angular CLI globally
+        state: present  # Ensure Angular CLI is installed
+
+    - name: Install NGINX
+      apt:
+        name: nginx
+        state: present  # Ensure NGINX is installed
+
+    - name: Clone Git Repository
+      git:
+        repo: "https://github.com/yusufsefasezer/angular-contact-list.git"
+        dest: "/home/ubuntu/angular-contact-list"  # Destination path for the cloned repository
+
+    - name: Install npm dependencies
+      command: npm install
+      args:
+        chdir: "/home/ubuntu/angular-contact-list"  # Change directory to the cloned repository
+
+    - name: Build Angular App
+      command: npm run build
+      args:
+        chdir: "/home/ubuntu/angular-contact-list"  # Change directory to the cloned repository
+
+    - name: Synchronize files to /var/www/html
+      command: rsync -av --delete /home/ubuntu/angular-contact-list/dist/contact/ /var/www/html/
