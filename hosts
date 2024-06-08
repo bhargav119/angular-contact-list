@@ -1,0 +1,2 @@
+[node-app]
+192.168.1.97 ansible_user=ubuntu ansible_port=22 ansible_ssh_private_key_file=/home/ubuntu/access.pem
