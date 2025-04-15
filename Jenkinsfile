@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     // Remove the existing Dockerfile (if present)
-                    sh 'rm -f Dockerfile'
+                   // sh 'rm -f Dockerfile'
 
                     // Check if Dockerfile exists in the correct location
                     sh 'ls -l'
