@@ -17,16 +17,20 @@ pipeline {
         }
 
         stage('Docker Build') {
-            steps {
-                script {
-                    sh '''
-                        sh 'rm -f Dockerfile'
-                        cp Dockerfile .
-                        docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                    '''
-                }
-            }
+    steps {
+        script {
+            // Remove the existing Dockerfile (if present)
+            sh 'rm -f Dockerfile'
+
+            // Copy the updated Dockerfile to the workspace
+            sh 'cp angular-contact-list/Dockerfile .'
+
+            // Now build the Docker image
+            sh 'docker build -t angular-contact-app:latest .'
         }
+    }
+}
+
 
         stage('Trivy Scan') {
             steps {
