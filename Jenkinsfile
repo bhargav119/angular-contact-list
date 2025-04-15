@@ -26,7 +26,7 @@ pipeline {
                     sh 'ls -l'
 
                     // Copy the updated Dockerfile to the workspace (ensure the path is correct)
-                    sh 'cp Dockerfile .'
+                    // sh 'cp Dockerfile .'
 
                     // Now build the Docker image
                     sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
