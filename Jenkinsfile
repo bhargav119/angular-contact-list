@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "angular-contact-app"
         IMAGE_TAG = "latest"
+        CONTAINER_NAME = "angular-contact-container"
     }
 
     stages {
@@ -19,7 +20,6 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    // Now build the Docker image
                     sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                     sh "docker ps"
                 }
@@ -36,12 +36,24 @@ pipeline {
                 }
             }
         }
+
+        stage('Start Container') {
+            steps {
+                script {
+                    // Stop and remove existing container if running
+                    sh "docker stop ${CONTAINER_NAME} || true"
+                    sh "docker rm ${CONTAINER_NAME} || true"
+                    
+                    // Start new container from the image
+                    sh "docker run -d --name ${CONTAINER_NAME} -p 4200:80 ${IMAGE_NAME}:${IMAGE_TAG}"
+                }
+            }
+        }
     }
 
     post {
         always {
             archiveArtifacts artifacts: 'trivy-report.html', onlyIfSuccessful: false
-            // Remove the Docker image after the build
             sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
         }
     }
