@@ -20,6 +20,7 @@ pipeline {
             steps {
                 script {
                     sh '''
+                        sh 'rm -f Dockerfile'
                         cp Dockerfile .
                         docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
                     '''
