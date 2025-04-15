@@ -17,20 +17,19 @@ pipeline {
         }
 
         stage('Docker Build') {
-    steps {
-        script {
-            // Remove the existing Dockerfile (if present)
-            sh 'rm -f Dockerfile'
+            steps {
+                script {
+                    // Remove the existing Dockerfile (if present)
+                    sh 'rm -f Dockerfile'
 
-            // Copy the updated Dockerfile to the workspace
-            sh 'cp angular-contact-list/Dockerfile .'
+                    // Copy the updated Dockerfile to the workspace
+                    sh 'cp angular-contact-list/Dockerfile .'
 
-            // Now build the Docker image
-            sh 'docker build -t angular-contact-app:latest .'
+                    // Now build the Docker image
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                }
+            }
         }
-    }
-}
-
 
         stage('Trivy Scan') {
             steps {
@@ -47,7 +46,8 @@ pipeline {
     post {
         always {
             archiveArtifacts artifacts: 'trivy-report.html', onlyIfSuccessful: false
-            sh 'docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true'
+            // Remove the Docker image after the build
+            sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true"
         }
     }
 }
