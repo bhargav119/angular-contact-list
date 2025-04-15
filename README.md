@@ -1,3 +1,7 @@
+# Install Node.js (latest LTS version)
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
 # Contact
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.2.1.
