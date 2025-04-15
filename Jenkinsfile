@@ -19,17 +19,9 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    // Remove the existing Dockerfile (if present)
-                   // sh 'rm -f Dockerfile'
-
-                    // Check if Dockerfile exists in the correct location
-                    sh 'ls -l'
-
-                    // Copy the updated Dockerfile to the workspace (ensure the path is correct)
-                    // sh 'cp Dockerfile .'
-
                     // Now build the Docker image
                     sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                    sh "docker ps"
                 }
             }
         }
