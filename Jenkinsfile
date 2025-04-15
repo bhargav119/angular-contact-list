@@ -1,8 +1,9 @@
 pipeline {
-    agent any  // Runs on any available agent
+    agent any
 
     environment {
-        PATH = "/usr/local/bin:$PATH"
+        IMAGE_NAME = "angular-contact-app"
+        IMAGE_TAG = "latest"
     }
 
     stages {
@@ -15,27 +16,24 @@ pipeline {
             }
         }
 
-        stage('Trivy Scan') {
+        stage('Docker Build') {
             steps {
                 script {
-                    // Run Trivy against the Angular dist folder
-                    // We'll zip it up into a Docker image so Trivy can scan
                     sh '''
-                        mkdir -p trivy-temp && \
-                        cp -r angular-contact-list/dist/contact/* trivy-temp/ && \
-                        cd trivy-temp && \
-                        echo -e "FROM scratch\\nCOPY . /app" > Dockerfile && \
-                        docker build -t angular-temp:latest . && \
-                        trivy image --severity HIGH,CRITICAL --no-progress --format table -o trivy-report.html angular-temp:latest || true
+                        cp angular-contact-list/Dockerfile .
+                        docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
                     '''
                 }
             }
         }
 
-        stage('Deploy Angular App') {
+        stage('Trivy Scan') {
             steps {
                 script {
-                    sh 'scp -i /home/ubuntu/node-access -r /home/ubuntu/workspace/node-app/dist/contact/* ubuntu@192.168.1.208:/var/www/html'
+                    sh '''
+                        trivy image --severity HIGH,CRITICAL --no-progress \
+                            --format table -o trivy-report.html ${IMAGE_NAME}:${IMAGE_TAG} || true
+                    '''
                 }
             }
         }
@@ -43,7 +41,8 @@ pipeline {
 
     post {
         always {
-            sh 'rm -rf angular-contact-list trivy-temp || true'
+            archiveArtifacts artifacts: 'trivy-report.html', onlyIfSuccessful: false
+            sh 'docker rmi ${IMAGE_NAME}:${IMAGE_TAG} || true'
         }
     }
 }
