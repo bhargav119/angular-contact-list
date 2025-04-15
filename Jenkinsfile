@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        cp angular-contact-list/Dockerfile .
+                        cp Dockerfile .
                         docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
                     '''
                 }
