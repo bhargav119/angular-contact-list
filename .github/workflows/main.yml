@@ -3,10 +3,10 @@ name: CI Pipeline
 on:
   push:
     branches:
-      - image-scanner
+      - image-scanner  # Change to the correct branch (image-scanner)
   pull_request:
     branches:
-      - image-scanner
+      - image-scanner  # Change to the correct branch (image-scanner)
 
 jobs:
   build:
@@ -18,9 +18,11 @@ jobs:
       CONTAINER_NAME: "angular-contact-container"
 
     steps:
-      # Step 1: Checkout code
+      # Step 1: Checkout code from the image-scanner branch
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: image-scanner  # Checkout the image-scanner branch
 
       # Step 2: Set up Docker Buildx
       - name: Set up Docker Buildx
@@ -28,7 +30,7 @@ jobs:
 
       # Step 3: Build Angular App
       - name: Build Angular App
-        working-directory: ./angular-contact-list  # Ensure this is correct
+        working-directory: ./src  # Correct path to your angular app
         run: |
           npm install
           npm run build
