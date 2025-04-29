@@ -46,15 +46,14 @@ jobs:
           docker rm ${{ env.CONTAINER_NAME }} || true
           docker run -d --name ${{ env.CONTAINER_NAME }} -p 4200:80 ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-    # Clean up after the job
-    post:
-      always:
-        - name: Archive Trivy report
-          uses: actions/upload-artifact@v2
-          with:
-            name: trivy-report
-            path: trivy-report.html
+      # Step 6: Archive Trivy report
+      - name: Archive Trivy report
+        uses: actions/upload-artifact@v2
+        with:
+          name: trivy-report
+          path: trivy-report.html
 
-        - name: Docker Cleanup
-          run: |
-            docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} || true
+      # Step 7: Docker Cleanup
+      - name: Docker Cleanup
+        run: |
+          docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} || true
