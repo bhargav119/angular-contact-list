@@ -1,29 +1,60 @@
-name: 'CI / CD for Angular'
+name: CI Pipeline
 
 on:
   push:
     branches:
-      - 'master'
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    steps:   
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v3.6.0
-        with:
-          node-version: '18'
-          #cache: 'npm'
 
-      - name: Checkout 🛎️
-        uses: actions/checkout@v3.3.0
+    env:
+      IMAGE_NAME: "angular-contact-app"
+      IMAGE_TAG: "latest"
+      CONTAINER_NAME: "angular-contact-container"
 
-      - name: Install and Build 🔧
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Install Angular Dependencies and Build the Angular App
+      - name: Build Angular App
+        working-directory: ./angular-contact-list
         run: |
           npm install
           npm run build
 
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: dist/contact
+      # Step 3: Docker Build
+      - name: Docker Build
+        run: |
+          docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+
+      # Step 4: Trivy Scan for vulnerabilities
+      - name: Trivy Scan
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/app aquasec/trivy image --severity HIGH,CRITICAL --no-progress --format table -o trivy-report.html ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} || true
+
+      # Step 5: Start Container
+      - name: Start Container
+        run: |
+          docker stop ${{ env.CONTAINER_NAME }} || true
+          docker rm ${{ env.CONTAINER_NAME }} || true
+          docker run -d --name ${{ env.CONTAINER_NAME }} -p 4200:80 ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+    # Clean up after the job
+    post:
+      always:
+        - name: Archive Trivy report
+          uses: actions/upload-artifact@v2
+          with:
+            name: trivy-report
+            path: trivy-report.html
+
+        - name: Docker Cleanup
+          run: |
+            docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} || true
