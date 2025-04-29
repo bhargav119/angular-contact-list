@@ -3,7 +3,7 @@ name: 'CI / CD for Angular'
 on:
   push:
     branches:
-      - 'master'
+      - 'image-scanner'
 
 jobs:
   build-and-deploy:
