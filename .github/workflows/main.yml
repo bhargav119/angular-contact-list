@@ -46,9 +46,9 @@ jobs:
           docker rm ${{ env.CONTAINER_NAME }} || true
           docker run -d --name ${{ env.CONTAINER_NAME }} -p 4200:80 ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-      # Step 6: Archive Trivy report
+      # Step 6: Upload Trivy report as artifact
       - name: Upload Trivy report as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: trivy-report
           path: trivy-report.html  # Ensure this file exists at this path
