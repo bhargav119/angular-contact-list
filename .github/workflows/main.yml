@@ -14,7 +14,7 @@ jobs:
 
     env:
       IMAGE_NAME: "angular-contact-app"
-      IMAGE_TAG: "bhargav"
+      IMAGE_TAG: "v1"
       CONTAINER_NAME: "angular-contact-container"
 
     steps:
