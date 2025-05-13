@@ -43,9 +43,18 @@ jobs:
       # Step 5: Run Trivy Scan
       - name: Run Trivy Scan
         run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} --severity HIGH,CRITICAL --no-progress --format table -o trivy-report.html || true
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            --severity HIGH,CRITICAL --no-progress --format table -o trivy-report.html || true
 
-      # Step 6: Docker Cleanup (optional)
+      # Step 6: Upload Trivy Report
+      - name: Upload Trivy Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-report
+          path: trivy-report.html
+
+      # Step 7: Docker Cleanup (optional)
       - name: Docker Cleanup
         run: |
           docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} || true
