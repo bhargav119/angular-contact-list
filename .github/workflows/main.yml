@@ -3,10 +3,10 @@ name: CI Pipeline
 on:
   push:
     branches:
-      - image-scanner  # Change to the correct branch (image-scanner)
+      - image-scanner  
   pull_request:
     branches:
-      - image-scanner  # Change to the correct branch (image-scanner)
+      - image-scanner  
 
 jobs:
   build:
