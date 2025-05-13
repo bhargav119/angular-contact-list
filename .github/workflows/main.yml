@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Image Build & Scan
 
 on:
   push:
@@ -9,38 +9,24 @@ on:
       - image-scanner  
 
 jobs:
-  build:
+  scan:
     runs-on: ubuntu-latest
 
     env:
       IMAGE_NAME: "angular-contact-app"
       IMAGE_TAG: "latest"
-      CONTAINER_NAME: "angular-contact-container"
 
     steps:
-      # Step 1: Checkout code from the image-scanner branch
+      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          ref: image-scanner
 
-      # Step 2: Set up Docker Buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      # Step 3: Build Angular App
-      - name: Build Angular App
-        working-directory: ./src
-        run: |
-          npm install
-          npm run build
-
-      # Step 4: Build Docker Image
+      # Step 2: Build Docker Image
       - name: Build Docker Image
         run: |
           docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
 
-      # Step 5: Run Trivy Scan for All Vulnerabilities
+      # Step 3: Run Trivy Scan (all severities)
       - name: Run Trivy Scan
         run: |
           docker run --rm \
@@ -52,24 +38,9 @@ jobs:
             --format table \
             -o /app/trivy-report.html || true
 
-      # Step 6: Confirm Trivy Report Exists
-      - name: Confirm Trivy Report
-        run: |
-          if [[ -f trivy-report.html ]]; then
-            echo " Trivy report created."
-          else
-            echo " Trivy report not found."
-            exit 1
-          fi
-
-      # Step 7: Upload Trivy Report
+      # Step 4: Upload Trivy Report
       - name: Upload Trivy Report
         uses: actions/upload-artifact@v4
         with:
           name: trivy-report
           path: ./trivy-report.html
-
-      # Step 8: Docker Cleanup (optional)
-      - name: Docker Cleanup
-        run: |
-          docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} || true
