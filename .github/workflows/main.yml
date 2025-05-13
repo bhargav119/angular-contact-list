@@ -44,4 +44,32 @@ jobs:
       - name: Run Trivy Scan
         run: |
           docker run --rm \
-            -v ${{ github.workspace
+            -v ${{ github.workspace }}:/app \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
+            --severity HIGH,CRITICAL \
+            --no-progress \
+            --format table \
+            -o /app/trivy-report.html || true
+
+      # Step 6: Confirm Trivy Report Exists
+      - name: Confirm Trivy Report
+        run: |
+          if [[ -f trivy-report.html ]]; then
+            echo "✅ Trivy report created."
+          else
+            echo "❌ Trivy report not found."
+            exit 1
+          fi
+
+      # Step 7: Upload Trivy Report
+      - name: Upload Trivy Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: ./trivy-report.html
+
+      # Step 8: Docker Cleanup (optional)
+      - name: Docker Cleanup
+        run: |
+          docker rmi ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} || true
