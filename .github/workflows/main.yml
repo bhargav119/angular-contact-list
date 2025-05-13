@@ -22,7 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          ref: image-scanner  # Checkout the image-scanner branch
+          ref: image-scanner
 
       # Step 2: Set up Docker Buildx
       - name: Set up Docker Buildx
@@ -30,7 +30,7 @@ jobs:
 
       # Step 3: Build Angular App
       - name: Build Angular App
-        working-directory: ./src  # Correct path to your angular app
+        working-directory: ./src
         run: |
           npm install
           npm run build
@@ -40,14 +40,14 @@ jobs:
         run: |
           docker build -t ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
 
-      # Step 5: Run Trivy Scan
+      # Step 5: Run Trivy Scan for All Vulnerabilities
       - name: Run Trivy Scan
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/app \
             -v /var/run/docker.sock:/var/run/docker.sock \
             aquasec/trivy:latest image ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
-            --severity HIGH,CRITICAL \
+            --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
             --no-progress \
             --format table \
             -o /app/trivy-report.html || true
@@ -56,9 +56,9 @@ jobs:
       - name: Confirm Trivy Report
         run: |
           if [[ -f trivy-report.html ]]; then
-            echo "✅ Trivy report created."
+            echo " Trivy report created."
           else
-            echo "❌ Trivy report not found."
+            echo " Trivy report not found."
             exit 1
           fi
 
